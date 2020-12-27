@@ -97,6 +97,7 @@ var readability = {
         var articleTools   = readability.getArticleTools();
         var articleTitle   = readability.getArticleTitle();
         var articleContent = readability.grabArticle();
+        return;
         var articleFooter  = readability.getArticleFooter();
 
         if(!articleContent) {
@@ -452,6 +453,7 @@ var readability = {
 
         /* Remove all stylesheets */
         for (var k=0;k < document.styleSheets.length; k+=1) {
+            continue;
             if (document.styleSheets[k].href !== null && document.styleSheets[k].href.lastIndexOf("readability") === -1) {
                 document.styleSheets[k].disabled = true;
             }
@@ -460,6 +462,7 @@ var readability = {
         /* Remove all style tags in head (not doing this on IE) - TODO: Why not? */
         var styleTags = document.getElementsByTagName("style");
         for (var st=0;st < styleTags.length; st+=1) {
+            continue;
             styleTags[st].textContent = "";
         }
 
@@ -699,6 +702,11 @@ var readability = {
         node.readability.contentScore += readability.getClassWeight(node);
     },
 
+    outlineNode: function(node, color){
+        //console.log(node, color);
+        node.style.outline = "solid 1px "  + color;
+    },
+
     /***
      * grabArticle - Using a variety of metrics (content score, classname, element types), find the content that is
      *               most likely to be the stuff a user wants to read. Then return it wrapped up in a div.
@@ -726,6 +734,8 @@ var readability = {
         var node = null;
         var nodesToScore = [];
         for(var nodeIndex = 0; (node = allElements[nodeIndex]); nodeIndex+=1) {
+            //console.log(nodeIndex);
+            //this.outlineNode(node, "yellow");
             /* Remove unlikely candidates */
             if (stripUnlikelyCandidates) {
                 var unlikelyMatchString = node.className + node.id;
@@ -738,8 +748,9 @@ var readability = {
                 )
                 {
                     dbg("Removing unlikely candidate - " + unlikelyMatchString);
-                    node.parentNode.removeChild(node);
-                    nodeIndex-=1;
+                    this.outlineNode(node, "red");
+                    //node.parentNode.removeChild(node);
+                    //nodeIndex-=1;
                     continue;
                 }
             }
@@ -749,8 +760,9 @@ var readability = {
             }
 
             /* Turn all divs that don't have children block level elements into p's */
-            if (node.tagName === "DIV") {
+            if (false && node.tagName === "DIV") {
                 if (node.innerHTML.search(readability.regexps.divToPElements) === -1) {
+                    this.outlineNode(node, "purple");
                     var newNode = document.createElement('p');
                     try {
                         newNode.innerHTML = node.innerHTML;
@@ -859,14 +871,16 @@ var readability = {
             topCandidate = document.createElement("DIV");
             topCandidate.innerHTML = page.innerHTML;
             page.innerHTML = "";
-            page.appendChild(topCandidate);
-            readability.initializeNode(topCandidate);
+            //page.appendChild(topCandidate);
+            //readability.initializeNode(topCandidate);
         }
 
         /**
          * Now that we have the top candidate, look through its siblings for content that might also be related.
          * Things like preambles, content split by ads that we removed, etc.
         **/
+        this.outlineNode(topCandidate, "green");
+        console.log(topCandidate);
         var articleContent        = document.createElement("DIV");
         if (isPaging) {
             articleContent.id     = "readability-content";
@@ -921,7 +935,11 @@ var readability = {
                 }
             }
 
-            if(append) {
+            if (append && !siblingNode === topCandidate) {
+                this.outlineNode(siblingNode, "lime");
+            }
+
+            if(false && append) {
                 dbg("Appending node: " + siblingNode);
 
                 var nodeToAppend = null;
@@ -953,6 +971,7 @@ var readability = {
                 articleContent.appendChild(nodeToAppend);
             }
         }
+        return;
 
         /**
          * So we have all of the content that we need. Now we clean it up for presentation.
