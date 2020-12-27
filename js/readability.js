@@ -1838,5 +1838,3 @@ var readability = {
     }
 
 };
-
-readability.init();
