@@ -30,6 +30,8 @@ var readability = {
     bodyCache:               null,   /* Cache the body HTML in case we need to re-use it later */
     flags:                   0x1 | 0x2 | 0x4,   /* Start with all flags set. */
 
+    onlyOutline: false,
+
     /* constants */
     FLAG_STRIP_UNLIKELYS:     0x1,
     FLAG_WEIGHT_CLASSES:      0x2,
@@ -73,7 +75,8 @@ var readability = {
      *
      * @return void
      **/
-    init: function() {
+    init: function(onlyOutline) {
+        readability.onlyOutline = onlyOutline;
         /* Before we do anything, remove all scripts that are not readability. */
         window.onload = window.onunload = function() {};
 
@@ -97,8 +100,11 @@ var readability = {
         var articleTools   = readability.getArticleTools();
         var articleTitle   = readability.getArticleTitle();
         var articleContent = readability.grabArticle();
-        return;
         var articleFooter  = readability.getArticleFooter();
+
+        if (readability.onlyOutline) {
+            return;
+        }
 
         if(!articleContent) {
             articleContent    = document.createElement("DIV");
@@ -453,7 +459,9 @@ var readability = {
 
         /* Remove all stylesheets */
         for (var k=0;k < document.styleSheets.length; k+=1) {
-            continue;
+            if (readability.onlyOutline) {
+                continue;
+            }
             if (document.styleSheets[k].href !== null && document.styleSheets[k].href.lastIndexOf("readability") === -1) {
                 document.styleSheets[k].disabled = true;
             }
@@ -462,7 +470,9 @@ var readability = {
         /* Remove all style tags in head (not doing this on IE) - TODO: Why not? */
         var styleTags = document.getElementsByTagName("style");
         for (var st=0;st < styleTags.length; st+=1) {
-            continue;
+            if (readability.onlyOutline) {
+                continue;
+            }
             styleTags[st].textContent = "";
         }
 
@@ -703,6 +713,9 @@ var readability = {
     },
 
     outlineNode: function(node, color){
+        if (!readability.onlyOutline) {
+            return;
+        }
         //console.log(node, color);
         node.style.outline = "solid 1px "  + color;
     },
@@ -749,8 +762,10 @@ var readability = {
                 {
                     dbg("Removing unlikely candidate - " + unlikelyMatchString);
                     this.outlineNode(node, "red");
-                    //node.parentNode.removeChild(node);
-                    //nodeIndex-=1;
+                    if (!readability.onlyOutline) {
+                        node.parentNode.removeChild(node);
+                        nodeIndex-=1;
+                    }
                     continue;
                 }
             }
@@ -760,7 +775,7 @@ var readability = {
             }
 
             /* Turn all divs that don't have children block level elements into p's */
-            if (false && node.tagName === "DIV") {
+            if (node.tagName === "DIV" && !readability.onlyOutline) {
                 if (node.innerHTML.search(readability.regexps.divToPElements) === -1) {
                     this.outlineNode(node, "purple");
                     var newNode = document.createElement('p');
@@ -871,8 +886,10 @@ var readability = {
             topCandidate = document.createElement("DIV");
             topCandidate.innerHTML = page.innerHTML;
             page.innerHTML = "";
-            //page.appendChild(topCandidate);
-            //readability.initializeNode(topCandidate);
+            if (!readability.onlyOutline) {
+                page.appendChild(topCandidate);
+                readability.initializeNode(topCandidate);
+            }
         }
 
         /**
@@ -939,7 +956,7 @@ var readability = {
                 this.outlineNode(siblingNode, "lime");
             }
 
-            if(false && append) {
+            if(append && !readability.onlyOutline) {
                 dbg("Appending node: " + siblingNode);
 
                 var nodeToAppend = null;
