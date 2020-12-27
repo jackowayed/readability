@@ -988,7 +988,9 @@ var readability = {
                 articleContent.appendChild(nodeToAppend);
             }
         }
-        return;
+        if (readability.onlyOutline) {
+            return;
+        }
 
         /**
          * So we have all of the content that we need. Now we clean it up for presentation.
