@@ -1,6 +1,12 @@
 /*jslint undef: true, nomen: true, eqeqeq: true, plusplus: true, newcap: true, immed: true, browser: true, devel: true, passfail: false */
 /*global window: false, readConvertLinksToFootnotes: false, readStyle: false, readSize: false, readMargin: false, Typekit: false, ActiveXObject: false */
 
+var Outline = {
+    TOP_CANDIDATE: 1,
+    SIBLING: 2,
+    UNLIKELY: 3,
+};
+
 var dbg = (typeof console !== 'undefined') ? function(s) {
     console.log("Readability: " + s);
 } : function() {};
@@ -712,12 +718,23 @@ var readability = {
         node.readability.contentScore += readability.getClassWeight(node);
     },
 
-    outlineNode: function(node, color){
+    outlineNode: function(node, outline){
         if (!readability.onlyOutline) {
             return;
         }
-        //console.log(node, color);
-        node.style.outline = "solid 1px "  + color;
+        node.style.outlineWidth = "1px";
+        switch (outline) {
+            case Outline.TOP_CANDIDATE:
+                node.style.color = "green";
+                node.style.outlineStyle = "dashed";
+            case Outline.SIBLING:
+                node.style.color = "lime";
+                node.style.outlineStyle = "dotted";
+            case Outline.UNLIKELY:
+                node.style.color = "red";
+                node.style.outlineStyle = "solid";
+        }
+        console.log(node, color);
     },
 
     /***
