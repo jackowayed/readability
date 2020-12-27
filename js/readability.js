@@ -952,7 +952,7 @@ var readability = {
                 }
             }
 
-            if (append && !siblingNode === topCandidate) {
+            if (append && siblingNode !== topCandidate) {
                 this.outlineNode(siblingNode, "lime");
             }
 
