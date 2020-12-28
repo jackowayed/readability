@@ -722,19 +722,25 @@ var readability = {
         if (!readability.onlyOutline) {
             return;
         }
-        node.style.outlineWidth = "1px";
+        console.log(outline == Outline.TOP_CANDIDATE);
         switch (outline) {
             case Outline.TOP_CANDIDATE:
-                node.style.color = "green";
+                node.style.outlineColor = "green";
                 node.style.outlineStyle = "dashed";
+                break;
             case Outline.SIBLING:
-                node.style.color = "lime";
+                node.style.outlineColor = "lime";
                 node.style.outlineStyle = "dotted";
+                break;
             case Outline.UNLIKELY:
-                node.style.color = "red";
+                node.style.outlineColor = "red";
                 node.style.outlineStyle = "solid";
+                break;
+            default:
+                console.error("Bad outline value", outline);
+                return;
         }
-        console.log(node, color);
+        node.style.outlineWidth = "5px";
     },
 
     /***
@@ -778,7 +784,7 @@ var readability = {
                 )
                 {
                     dbg("Removing unlikely candidate - " + unlikelyMatchString);
-                    this.outlineNode(node, "red");
+                    this.outlineNode(node, Outline.UNLIKELY);
                     if (!readability.onlyOutline) {
                         node.parentNode.removeChild(node);
                         nodeIndex-=1;
@@ -794,7 +800,6 @@ var readability = {
             /* Turn all divs that don't have children block level elements into p's */
             if (node.tagName === "DIV" && !readability.onlyOutline) {
                 if (node.innerHTML.search(readability.regexps.divToPElements) === -1) {
-                    this.outlineNode(node, "purple");
                     var newNode = document.createElement('p');
                     try {
                         newNode.innerHTML = node.innerHTML;
@@ -913,7 +918,7 @@ var readability = {
          * Now that we have the top candidate, look through its siblings for content that might also be related.
          * Things like preambles, content split by ads that we removed, etc.
         **/
-        this.outlineNode(topCandidate, "green");
+        this.outlineNode(topCandidate, Outline.TOP_CANDIDATE);
         console.log(topCandidate);
         var articleContent        = document.createElement("DIV");
         if (isPaging) {
@@ -970,7 +975,7 @@ var readability = {
             }
 
             if (append && siblingNode !== topCandidate) {
-                this.outlineNode(siblingNode, "lime");
+                this.outlineNode(siblingNode, Outline.SIBLING);
             }
 
             if(append && !readability.onlyOutline) {
